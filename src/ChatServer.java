@@ -1,8 +1,8 @@
 import java.net.Socket; 
-import net.sf.json.JSONObject;
+import org.json.*;
 public class ChatServer {
     String[] Servers = {};
-    public void ConnectClient(Socket Client,JSONObject info){
+    public void ConnectClient(Socket Client,String name){
 
 
     }

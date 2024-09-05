@@ -5,17 +5,21 @@
  */
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
+
 
 
 public class Server {
     public static volatile ChatServer Chats = new ChatServer();
-    public Server(){
-        
+    private static volatile JSONObject users = Users();
+    public static void main(String[] args){
+       
         try{
             ServerSocket server = new ServerSocket(8080);
             while (true) {
@@ -26,7 +30,7 @@ public class Server {
             
 
 
-        }catch(Exception e){}
+        }catch(Exception e){System.out.println(e.getMessage());System.out.println("Error while starting the server exit!");System.exit(1);}
         
 
      }
@@ -41,7 +45,7 @@ public class Server {
                     request.append(line).append("\n");
 
                 }
-                JSONObject json = new JSONObject().fromObject(request.toString());
+                JSONObject json = new JSONObject(request.toString());
                 String methode = "";
                 String user = "";
                 String pass = "";
@@ -57,7 +61,7 @@ public class Server {
 
                 if (methode.equals("Sign up")){
                     
-                        if(Users().containsKey(user)){
+                        if(Users().has(user)){
                             client.getOutputStream().write("user name already taken".getBytes());client.close();
                             ThreadResults.append("\nStatus : failed user auth");
                         }else {
@@ -70,7 +74,7 @@ public class Server {
                         
                 }if (methode.equals("login")){
                     
-                        if(Users().containsKey(user)){
+                        if(Users().has(user)){
                             if (Users().get(user).equals(pass)){
                                 client.getOutputStream().write("successfully logged in".getBytes());
                                 ThreadResults.append("Status : success log in");
@@ -98,17 +102,31 @@ public class Server {
         }catch(Exception e){
         return null;
     }
-        return new JSONObject().fromObject(res.toString());
+        return new JSONObject(res.toString());
 }
 
     private static void ManageUsers(int methode,String user,String password){
+        
         switch (methode) {
             case 0:
-                Users().put(user, password);
+                users.put(user, password);
+                break;
             case 1:
-                Users().remove(user);
+                users.remove(user);
+                break;
         
         }
+        try {
+            FileOutputStream fout = new FileOutputStream(new File("users.json"));
+            OutputStreamWriter writer = new OutputStreamWriter(fout, "UTF-8");
+            writer.write(users.toString());
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        
 
     }
+   
 }
